@@ -73,18 +73,20 @@ matrix matrix::operator -(matrix b)
 matrix matrix::operator *(matrix b)
 {
     matrix temp;
-    int sum=0;
+    int turn=0;
     for(int i=0;i<size;i++)
     {
         for(int j=0;j<size;j++)
         {
-            for(int k=0;k<size;k++)
+            if(turn%2==0)
             {
-                //temp.m[i][j]=(m[i][j]*b.m[i][j])+(m[i][j+1]*b.m[i+1][j]);
-                sum=sum+(m[i][k]*b.m[k][j]);
+                temp.m[i][j]=(m[i][j]*b.m[0][0])+(m[i][j+1]*b.m[1][0]);
             }
-            temp.m[i][j]=sum;
-            sum=0;
+            else
+            {
+                temp.m[i][j]=(m[i][j-1]*b.m[0][1])+(m[i][j]*b.m[1][1]);
+            }
+            turn++;
         }
     }
     return temp;
