@@ -141,13 +141,13 @@ int main(int argc,char* argv[])
 	map<string,string> team_map;
 	map<string,string> season_map;
 	map<string,Results> result_map;
-	Team t[357];
+	Team t;
 	Seasons s;
 	Results r;
 	int i=0;
 	if(argc<2)
 	{
-		cout<<endl<<"Wrong arguments. Program exiting...";
+		cout<<endl<<"Wrong arguments. Program exiting..."<<endl;
 		return 0;
 	}
 	arg=argv[1];
@@ -162,10 +162,10 @@ int main(int argc,char* argv[])
 		getline(str, name);
 		if(i!=0)
 		{
-			t[i].setId(id);
-			t[i].setName(name);
-			print_id=t[i].getId();
-			print_name=t[i].getName();
+			t.setId(id);
+			t.setName(name);
+			print_id=t.getId();
+			print_name=t.getName();
 			team_map[print_id]=print_name;	
 			// cout<<endl<<print_id<<"    "<<print_name;
 		}
@@ -222,6 +222,7 @@ int main(int argc,char* argv[])
 			r.setLScore(lscore);
 			r.setWLoc(wloc);
 			print_id=r.getSeasonId();
+			// line 226-228 are for (int to string) conversion
 			stringstream x;
 			x<<i;
 			string n= x.str();
@@ -278,6 +279,50 @@ int main(int argc,char* argv[])
 			}
 		}
 		cout<<endl;
+	}
+	else if(arg=="finalRecord")
+	{
+		string season,team,teamid,seasonid;
+		season=argv[2];
+		team=argv[3];
+		int won=0,lost=0;
+
+		map<string,string>::iterator it_team;
+		for(it_team=team_map.begin();it_team!=team_map.end();++it_team)
+		{
+			if(it_team->second==team)
+			{
+				teamid=it_team->first;
+				break;
+			}
+		}
+
+		map<string,string>::iterator it_s;
+		for(it_s=season_map.begin();it_s!=season_map.end();++it_s)
+		{
+			if(it_s->second==season)
+			{
+				seasonid=it_s->first;
+				break;
+			}
+		}
+
+		map<string,Results>::iterator it_res;
+		for(it_res=result_map.begin();it_res!=result_map.end();++it_res)
+		{
+			if((it_res->second.getSeasonId()==seasonid) && (it_res->second.getWTeam()==teamid || it_res->second.getLTeam()==teamid))
+			{
+				if(it_res->second.getWTeam()==teamid)
+				{
+					won++;
+				}
+				else if(it_res->second.getLTeam()==teamid)
+				{
+					lost++;
+				}
+			}
+		}
+		cout<<won<<"-"<<lost<<endl;
 	}
 	else if(arg=="bestWinPercentage")
 	{
@@ -342,8 +387,80 @@ int main(int argc,char* argv[])
 		}
 		cout<<endl<<team_map[highest_id]<<endl;
 	}
-	
-	
+	else if(arg=="largestMargin")
+	{
+		string season,seasonid,teamid,highest_id,str;
+		season=argv[2];
+		int max=0,score=0;
+		float pointScored=0,numGames=0,pointAllowed=0,perc=1;
+		map<string,int> margin_map;
+		map<string,string>::iterator it_s;
+		map<string,string>::iterator it_team;
+		map<string,Results>::iterator it_res;
+		map<string,int>::iterator it_marg;
+
+		for(it_s=season_map.begin();it_s!=season_map.end();++it_s)
+		{
+			if(it_s->second==season)
+			{
+				seasonid=it_s->first;
+				break;
+			}
+		}
+
+		for(it_team=team_map.begin();it_team!=team_map.end();++it_team)
+		{
+			teamid=it_team->first;
+			for(it_res=result_map.begin();it_res!=result_map.end();++it_res)
+			{
+				if((it_res->second.getSeasonId()==seasonid) && (it_res->second.getWTeam()==teamid))
+				{
+					str= it_res->second.getWScore();
+					istringstream (str) >> score;
+					pointScored+=score;
+					str=it_res->second.getLScore();
+					istringstream (str) >> score;
+					pointAllowed+=score;
+					numGames++;
+				}
+				else if((it_res->second.getSeasonId()==seasonid) && (it_res->second.getLTeam()==teamid))
+				{
+					str= it_res->second.getLScore();
+					istringstream (str) >> score;
+					pointScored+=score;
+					str=it_res->second.getWScore();
+					istringstream (str) >> score;
+					pointAllowed+=score;
+					numGames++;
+				}
+			}
+			if(numGames==0)
+			{
+				perc=0;
+			}
+			else
+			{
+				perc=(pointScored-pointAllowed)/numGames;	
+			}
+			// cout<<endl<<teamid<<" "<<won<<" "<<total<<" "<<perc;
+			// cout<<perc<<endl;
+			margin_map[teamid]=(int)perc;
+			perc=1;
+			pointScored=0;
+			pointAllowed=0;
+			numGames=0;
+		}
+		for(it_marg=margin_map.begin();it_marg!=margin_map.end();++it_marg)
+		{
+			if(it_marg->second > max)
+			{
+				highest_id=it_marg->first;
+				max=it_marg->second;
+			}
+			// cout<<endl<<it_marg->first<<" "<<it_marg->second;
+		}
+		cout<<endl<<team_map[highest_id]<<endl;
+	}
 
 	return 0;
 }
