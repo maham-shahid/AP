@@ -1,0 +1,8 @@
+Coded By:	Maham Shahid
+Regn No:	00733
+Class:		BESE-3B
+
+												Advanced Programming Lab 4
+
+This program is designed only to transfer files of less than 1MB size.
+It reads the requested file line-by-line and transfers to the client. Throws a FileNotFoundException if the requested file could not be found.
